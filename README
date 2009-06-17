@@ -1,0 +1,10 @@
+Kerby - Light weight video surveillance system
+by Simone Margaritelli aka evilsocket
+<evilsocket@gmail.com - http://www.evilsocket.net>
+
+Kerby is a light weight, fast, efficient and extendible video surveillance system written
+tu run efficiently on embedded GNU/Linux devices such as Fox boards, Alix boards, and so on.
+It uses an algorithm of mine (still to be improved/optimized) to track motion on the video
+buffer, if the motion value (computed as the percentage on the whole buffer) is higher than
+a configurable threshold Kerby just start to record the video stream until there's no more
+motion . 
