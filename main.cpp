@@ -23,25 +23,19 @@
 #define QUADRANTSIZE 8
 #define THRESHOLD	 5.0f
 
-void freequads( kb_delta_quadrants_t * quads ){
-	kb_delta_quadrants_t::iterator i;
-	for( i = quads->begin(); i != quads->end(); i++ ){
-		delete *i;	
-	}
-	delete quads;
-}
-
 void usage( char *app ){
 	printf( "\nUsage %s -d <device> -t <threshold> -q <quadrantsize> -a <alarm percentage>\n\n", app );	
 }
 
 int main( int argc, char *argv[] ){
-	kb_video_driver_t * v4l = (kb_video_driver_t *)&kb_video_drivers[0]; 
-	kb_device_t         dev;
+	kb_video_driver_t  *v4l = (kb_video_driver_t *)&kb_video_drivers[0]; 
+	kb_device_t         device;
 	kb_video_buffer_t   frame;
-	Analyzer		    analyzer( 320, 240, 3, QUADRANTSIZE, THRESHOLD );
+	Analyzer           *analyzer;
 	
-	v4l->open( argv[1], &dev );
+	v4l->open( argv[1], &device );
+
+	analyzer = new Analyzer( device.width, device.height, 3, QUADRANTSIZE, THRESHOLD );
 
 	printf( "Device :\n"
 			"\tfile descriptor : %d\n"
@@ -51,35 +45,27 @@ int main( int argc, char *argv[] ){
 			"\tmax width       : %d\n"
 			"\tmax height      : %d\n"
 			"\tdepth           : %d\n",
-			dev.fd,
-			dev.mmap,
-			dev.device,
-			dev.name,
-			dev.width,
-			dev.height,
-			dev.depth );
-
-	CImg<byte>  iframe( 320, 240, 1, 3 );
+			device.fd,
+			device.mmap,
+			device.device,
+			device.name,
+			device.width,
+			device.height,
+			device.depth );
 				
-	double delta, total = (320.0f * 240.0f) / QUADRANTSIZE;
-	kb_delta_quadrants_t * quads;
+	double delta;
 	
-	do{
-		v4l->capture( &dev, &frame );
+	while( 1 ){
+		v4l->capture( &device, &frame );
 
-		quads = analyzer.update( &frame );
-		iframe.swap( *analyzer.frame() );
-		
-		delta = (quads->size() * 100.0f) / total;
+		delta = analyzer->update( &frame );
 		
 		printf( "DELTA : %f%%\n", delta );
-		
-		freequads(quads);
 	}
-	while( 1 );
-	
 
-	v4l->close( &dev );
+	v4l->close( &device );
+	
+	delete analyzer;
 	
 	return 0;	
 }

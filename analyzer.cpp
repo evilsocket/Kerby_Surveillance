@@ -92,11 +92,11 @@ double Analyzer::delta( CImg<byte> *quadrant, int xt, int yt, int xb, int yb ){
 }
 
 Analyzer::Analyzer( uint width, uint height, uint depth, uint quadrant_size, double threshold ){
-	this->m_masterframe = new CImg<byte>( width, height, 1, depth );	
-	this->m_frame		= new CImg<byte>( width, height, 1, depth );	
-	
+	this->m_masterframe   = new CImg<byte>( width, height, 1, depth );	
+	this->m_frame		  = new CImg<byte>( width, height, 1, depth );	
 	this->m_quadrant_size = quadrant_size;
 	this->m_threshold	  = threshold;
+	this->m_quadrants     = (width * height) / this->m_quadrant_size;
 }
 
 Analyzer::~Analyzer(){
@@ -104,14 +104,12 @@ Analyzer::~Analyzer(){
 	delete this->m_frame;
 }
 
-kb_delta_quadrants_t * Analyzer::update( kb_video_buffer_t *frame ){
+double Analyzer::update( kb_video_buffer_t *frame ){
 	CImg<byte> iframe( frame->width, frame->height, 1, frame->depth ), 
 			   quadrant;
-	int        x, y, xt, yt, xb, yb;
+	int        x, y, xt, yt, xb, yb, count = 0;
 	double 	   qdelta;
-	
-	kb_delta_quadrants_t * delta_quadrants = new kb_delta_quadrants_t;
-	
+		
 	this->convert( frame, &iframe );
 	
 	this->m_frame->swap(iframe);
@@ -128,7 +126,7 @@ kb_delta_quadrants_t * Analyzer::update( kb_video_buffer_t *frame ){
 			qdelta = this->delta( &quadrant, xt, yt, xb, yb );
 			
 			if( qdelta >= this->m_threshold ){
-				delta_quadrants->push_back( new kb_quadrant_t(xt,yt,xb,yb,qdelta) );
+				count++;
 			}
 		}
 	}
@@ -136,13 +134,5 @@ kb_delta_quadrants_t * Analyzer::update( kb_video_buffer_t *frame ){
 	this->m_masterframe->swap(iframe);
 	
 	
-	return delta_quadrants;
-}
-
-CImg<byte> * Analyzer::frame(){
-	return this->m_frame;	
-}
-
-CImg<byte> * Analyzer::masterframe(){
-	return this->m_masterframe;	
+	return (count * 100.0f) / (double)this->m_quadrants;
 }

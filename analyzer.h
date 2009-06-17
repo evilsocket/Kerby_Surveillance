@@ -56,7 +56,8 @@ class Analyzer
 		double		 m_threshold;
 		
 		uint	     m_quadrant_size;		
-	
+		uint         m_quadrants;
+		
 		CImg<byte> * m_masterframe;
 		CImg<byte> * m_frame;
 		
@@ -74,10 +75,7 @@ class Analyzer
 		Analyzer( uint width, uint height, uint depth, uint quadrant_size, double threshold );
 	   ~Analyzer();
 	   
-	   kb_delta_quadrants_t * update( kb_video_buffer_t *frame );
-	   
-	   CImg<byte> * frame();
-	   CImg<byte> * masterframe();
+	   double update( kb_video_buffer_t *frame );
 };
 
 
