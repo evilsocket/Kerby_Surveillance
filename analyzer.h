@@ -22,57 +22,32 @@
 #	define __analyzer_h__
 
 #include "driver.h"
-#include <vector>
-
-#include <CImg.h>
-
-using std::vector;
-using namespace cimg_library; 
-
-typedef struct _kb_quadrant{
-	int xt;
-	int yt;
-	int xb;
-	int yb;
-	
-	double delta;
-	
-	_kb_quadrant( int xt, int yt, int xb, int yb, double delta ){
-		this->xt = xt;
-		this->yt = yt;
-		this->xb = xb;
-		this->yb = yb;
-		this->delta = delta;
-	}	
-}
-kb_quadrant_t;
-
-typedef vector<kb_quadrant_t *> kb_delta_quadrants_t;
 
 class Analyzer
 {
 	private :
-	
-		double		 m_threshold;
+		kb_video_driver_t *m_driver;	
+			
+		double		       m_threshold;
 		
-		uint	     m_quadrant_size;		
-		uint         m_quadrants;
+		uint	           m_quadrant_size;		
+		uint               m_quadrants;
 		
-		CImg<byte> * m_masterframe;
-		CImg<byte> * m_frame;
+		kb_video_buffer_t *m_masterframe;
 		
-		void convert( kb_video_buffer_t *frame, CImg<byte> *image );
-		void convert( kb_video_buffer_t *frame );
-		
-		CImg<byte> quadrant( CImg<byte> *image, int xt, int yt, int xb, int yb );
-		CImg<byte> quadrant( int xt, int yt, int xb, int yb );
-		
-		double delta( short total, short value );
-		double delta( CImg<byte> *quadrant, int xt, int yt, int xb, int yb );
-				
+		inline double delta( short total, short value ){
+			double a = total,
+				   b = value;
+			if( total < value ){
+				a = value;
+				b = total;
+			}
+			return (b > 0 ? (((a - b) / b) * 100.0f) : 0);
+		}
+					
 	public  :
 	
-		Analyzer( uint width, uint height, uint depth, uint quadrant_size, double threshold );
+		Analyzer( kb_video_driver_t *driver, uint width, uint height, uint depth, uint quadrant_size, double threshold );
 	   ~Analyzer();
 	   
 	   double update( kb_video_buffer_t *frame );

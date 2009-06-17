@@ -20,8 +20,12 @@
  ***************************************************************************/
 #include "analyzer.h"
 
+// TODO: Those values should be read from a configuration file .
 #define QUADRANTSIZE 8
-#define THRESHOLD	 5.0f
+#define THRESHOLD	 0.2f
+#define RECORDPATH   "/media/pendrive/kerbyd"
+
+#define DEBUG        1
 
 void usage( char *app ){
 	printf( "\nUsage %s -d <device> -t <threshold> -q <quadrantsize> -a <alarm percentage>\n\n", app );	
@@ -33,26 +37,30 @@ int main( int argc, char *argv[] ){
 	kb_video_buffer_t   frame;
 	Analyzer           *analyzer;
 	
-	v4l->open( argv[1], &device );
+	if( v4l->open( argv[1], &device ) < 0 ){
+		exit(-1);	
+	}
 
-	analyzer = new Analyzer( device.width, device.height, 3, QUADRANTSIZE, THRESHOLD );
-
-	printf( "Device :\n"
-			"\tfile descriptor : %d\n"
-			"\tmemory map      : 0x%X\n"
-			"\tdevice          : %s\n"
-			"\tname            : %s\n"
-			"\tmax width       : %d\n"
-			"\tmax height      : %d\n"
-			"\tdepth           : %d\n",
-			device.fd,
-			device.mmap,
-			device.device,
-			device.name,
-			device.width,
-			device.height,
-			device.depth );
-				
+	analyzer = new Analyzer( v4l, device.width, device.height, 3, QUADRANTSIZE, THRESHOLD );
+	
+	#ifdef DEBUG 
+		printf( "Device :\n"
+				"\tfile descriptor : %d\n"
+				"\tmemory map      : 0x%X\n"
+				"\tdevice          : %s\n"
+				"\tname            : %s\n"
+				"\tmax width       : %d\n"
+				"\tmax height      : %d\n"
+				"\tdepth           : %d\n",
+				device.fd,
+				device.mmap,
+				device.device,
+				device.name,
+				device.width,
+				device.height,
+				device.depth );
+	#endif
+	
 	double delta;
 	
 	while( 1 ){
@@ -60,7 +68,7 @@ int main( int argc, char *argv[] ){
 
 		delta = analyzer->update( &frame );
 		
-		printf( "DELTA : %f%%\n", delta );
+		printf( "DELTA : %f\n", delta );
 	}
 
 	v4l->close( &device );

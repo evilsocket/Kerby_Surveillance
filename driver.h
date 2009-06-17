@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <malloc.h>
 #include <linux/videodev.h>
+#include <stdlib.h>
 
 typedef unsigned char byte;
 typedef unsigned int  uint;
@@ -57,9 +58,19 @@ typedef struct{
 }
 kb_video_buffer_t;
 
-typedef int  (* kb_open_t)	 ( char *devname, kb_device_t * dev );
-typedef int  (* kb_capture_t)( kb_device_t * dev, kb_video_buffer_t * vbuffer );
-typedef void (* kb_close_t)	 ( kb_device_t * dev );
+typedef struct{
+	byte red;
+	byte green;
+	byte blue;
+}
+kb_rgb_t;
+
+typedef int  				(* kb_open_t)	 ( char *devname, kb_device_t * dev );
+typedef int  				(* kb_capture_t) ( kb_device_t * dev, kb_video_buffer_t * vbuffer );
+typedef void 				(* kb_close_t)	 ( kb_device_t * dev );
+typedef void 				(* kb_pixel_t)   ( kb_video_buffer_t * vbuffer, uint x, uint y, kb_rgb_t *pixel );
+typedef void 				(* kb_swap_t)    ( kb_video_buffer_t * src, kb_video_buffer_t * dst );
+typedef kb_video_buffer_t * (* kb_create_t)  ( uint width, uint height, uint depth );
 
 typedef struct{
 	char 		 name[0xFF];
@@ -67,16 +78,22 @@ typedef struct{
 	kb_open_t	 open;
 	kb_capture_t capture;
 	kb_close_t   close;
+	kb_pixel_t	 pixel;
+	kb_swap_t    swap;
+	kb_create_t  create;
 }
 kb_video_driver_t;
 
-int  v4l_open   ( char *devname, kb_device_t * dev );
-int  v4l_capture( kb_device_t * dev, kb_video_buffer_t * vbuffer );
-void v4l_close	( kb_device_t * dev );
+int  				v4l_open    ( char *devname, kb_device_t * dev );
+int  			    v4l_capture ( kb_device_t * dev, kb_video_buffer_t * vbuffer );
+void 				v4l_close	( kb_device_t * dev );
+void 			    v4l_pixel   ( kb_video_buffer_t * vbuffer, uint x, uint y, kb_rgb_t *pixel );
+void 			    v4l_swap    ( kb_video_buffer_t * src, kb_video_buffer_t * dst );
+kb_video_buffer_t * v4l_create  ( uint width, uint height, uint depth );
 
 static const kb_video_driver_t kb_video_drivers[] = 
 {
-	{ "Video 4 Linux v1.0", v4l_open, v4l_capture, v4l_close }
+	{ "Video 4 Linux v1.0", v4l_open, v4l_capture, v4l_close, v4l_pixel, v4l_swap, v4l_create }
 };
 
 #define SSVIDEODRIVERSN sizeof(kb_video_drivers) / sizeof(kb_video_drivers[0])

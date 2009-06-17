@@ -77,7 +77,7 @@ int v4l_capture( kb_device_t * dev, kb_video_buffer_t * vbuffer ){
 		perror("VIDIOCSYNC");
 		return -1;
 	}
-	
+
 	vbuffer->data = dev->mmap;
 	
 	return 1;
@@ -86,4 +86,28 @@ int v4l_capture( kb_device_t * dev, kb_video_buffer_t * vbuffer ){
 void v4l_close( kb_device_t * dev ){
 	munmap( dev->mmap, dev->width * dev->height * dev->depth );
 	close( dev->fd);
+}
+
+void v4l_pixel( kb_video_buffer_t * vbuffer, uint x, uint y, kb_rgb_t *pixel ){
+	uint offset = (y * vbuffer->width + x) * vbuffer->depth;
+	
+	pixel->red   = vbuffer->data[ offset + 0 ];
+	pixel->green = vbuffer->data[ offset + 1 ];
+	pixel->blue  = vbuffer->data[ offset + 2 ];
+}
+
+void v4l_swap( kb_video_buffer_t * src, kb_video_buffer_t * dst ){
+	memcpy( dst->data, src->data, dst->size );
+}
+
+kb_video_buffer_t * v4l_create( uint width, uint height, uint depth ){
+	kb_video_buffer_t *buffer = (kb_video_buffer_t *)malloc(sizeof(kb_video_buffer_t));
+	
+	buffer->width  = width;
+	buffer->height = height;
+	buffer->depth  = depth;
+	buffer->size   = width * height * depth;
+	buffer->data   = (byte *)malloc( buffer->size );
+	
+	return buffer;
 }
