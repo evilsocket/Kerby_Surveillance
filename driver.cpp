@@ -25,14 +25,14 @@ int v4l_open( char *devname, kb_device_t * dev ){
 	struct video_channel    vchan;
 	
 	if( (dev->fd = open( devname, O_RDWR )) <= 0 ){
-		perror("open");
+		perror(devname);
 		return -1;	
 	}
 	
 	strcpy( dev->device, devname );
 	
 	if( ioctl( dev->fd, VIDIOCGCAP, &vcap ) < 0 ){
-		perror("VIDIOCGCAP");
+		perror(devname);
 		return -1;	
   	}
   	
@@ -44,12 +44,12 @@ int v4l_open( char *devname, kb_device_t * dev ){
   	
   	vchan.channel = 1; 
   	if( ioctl( dev->fd, VIDIOCGCHAN, &vchan ) < 0 ){
-    	perror("VIDIOCGCHAN");
+    	perror(devname);
     	return -1;	
     }
     vchan.norm = 1;
     if( ioctl( dev->fd, VIDIOCSCHAN, &vchan ) < 0 ){
-    	perror("VIDIOCSCHAN");
+    	perror(devname);
     	return -1;	
     }
     
