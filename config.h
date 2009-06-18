@@ -18,65 +18,49 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#define DEBUG 1
+#ifndef __config_h__
+#	define __config_h__
 
-#include "analyzer.h"
-#include "config.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <map>
+#include <string>
 
-/*
-void usage( char *app ){
-	printf( "\nUsage %s -d <device> -t <threshold> -q <quadrantsize> -a <alarm percentage>\n\n", app );	
-}
-*/
+using std::map;
+using std::string;
+using std::pair;
 
-int main( int argc, char *argv[] ){
-	kb_video_driver_t  *v4l = (kb_video_driver_t *)&kb_video_drivers[0]; 
-	kb_device_t         device;
-	kb_video_buffer_t   frame;
-	Analyzer           *analyzer;
-	Config              config;
+typedef map < string, string > 			 hash_t;
+typedef pair< string, string > 			 hash_pair_t;
+typedef map < string, string >::iterator hash_iterator_t;
 
+class Config
+{
+	private :
 	
-	if( v4l->open( config.get("DEVICE"), &device ) < 0 ){
-		exit(-1);	
-	}
-
-	analyzer = new Analyzer( v4l, device.width, device.height, 3, config.get_int("QUADRANTSIZE"), config.get_double("THRESHOLD") );
-	
-	#ifdef DEBUG 
-		config.dump();
+		char   m_config_file[0xFF];
 		
-		printf( "Device :\n"
-				"\tfile descriptor : %d\n"
-				"\tmemory map      : 0x%X\n"
-				"\tdevice          : %s\n"
-				"\tname            : %s\n"
-				"\tmax width       : %d\n"
-				"\tmax height      : %d\n"
-				"\tdepth           : %d\n",
-				device.fd,
-				device.mmap,
-				device.device,
-				device.name,
-				device.width,
-				device.height,
-				device.depth );
-	#endif
-	
-	double delta;
-	
-	while( 1 ){
-		v4l->capture( &device, &frame );
-
-		delta = analyzer->update( &frame );
+		hash_t m_hash;
 		
-		if( delta > 0 ) printf( "DELTA : %f\n", delta );
-	}
+		bool config_exists();
+		void config_create();
+		
+		void trim( char *str );
+					
+	public  :
+	
+		Config();
+	   ~Config();
+	   
+	   void dump();
+	   
+	   char *get( const char *key );
+	   
+	   int    get_int( const char *key );
+	   double get_double( const char *key );
+};
 
-	v4l->close( &device );
-	
-	delete analyzer;
-	
-	return 0;	
-}
+#endif
+
 

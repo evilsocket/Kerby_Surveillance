@@ -77,5 +77,5 @@ double Analyzer::update( kb_video_buffer_t *frame ){
 	
 	memcpy( m_masterframe->data, frame->data, frame->size );
 		
-	return (count * 100.0f) / (double)m_quadrants;
+	return (count * 1000.0f) / (double)m_quadrants;
 }
