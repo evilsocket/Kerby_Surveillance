@@ -59,7 +59,8 @@ double Analyzer::update( kb_video_buffer_t *frame ){
 					// acquire pixels
 					m_driver->pixel( m_masterframe, xq, yq, &mpixel );	
 					m_driver->pixel( frame,         xq, yq, &fpixel );
-					// compute delta					
+					// compute delta			
+					// TODO : precompute color space density for a *color-adaptive* algorithm		
 					rd = delta( mpixel.red,   fpixel.red );
         			gd = delta( mpixel.green, fpixel.green );
 					bd = delta( mpixel.blue,  fpixel.blue );

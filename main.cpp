@@ -21,6 +21,7 @@
 #define DEBUG 1
 
 #include "analyzer.h"
+#include "avi.h"
 #include "config.h"
 
 /*
@@ -34,8 +35,10 @@ int main( int argc, char *argv[] ){
 	kb_device_t         device;
 	kb_video_buffer_t   frame;
 	Analyzer           *analyzer;
+	char                moviename[0xFF] = {0};
+	AVI                *movie = NULL;
 	Config              config;
-
+	double 				delta;
 	
 	if( v4l->open( config.get("DEVICE"), &device ) < 0 ){
 		exit(-1);	
@@ -62,15 +65,38 @@ int main( int argc, char *argv[] ){
 				device.height,
 				device.depth );
 	#endif
-	
-	double delta;
-	
+
 	while( 1 ){
 		v4l->capture( &device, &frame );
 
 		delta = analyzer->update( &frame );
 		
-		if( delta > 0 ) printf( "DELTA : %f\n", delta );
+		//if( delta > 0 ) printf( "DELTA : %f\n", delta );
+		if( delta > 0.0f ){
+			// create movie and start adding frames
+			if( movie == NULL ){
+				sprintf( moviename, "%s/%d.avi", config.get("RECORDPATH"), time(NULL) );
+				#ifdef DEBUG 
+					printf( "@ Creating new movie %s .\n", moviename );
+				#endif
+				movie = new AVI( moviename, device.width, device.height );
+				movie->start();
+			}
+			// continue with previously created movie	
+			#ifdef DEBUG 
+				printf( "@ Adding frame to %s .\n", moviename );
+			#endif
+			movie->addFrame(&frame);
+		}
+		else{
+			if( movie != NULL ){
+				#ifdef DEBUG 
+					printf( "@ Closing movie %s .\n", moviename );
+				#endif
+				delete movie;	
+			}	
+			movie = NULL;
+		}
 	}
 
 	v4l->close( &device );

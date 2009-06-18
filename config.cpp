@@ -131,7 +131,7 @@ void Config::dump(){
 	hash_iterator_t i;
 	printf( "-- Kerby Configuration --\n" );
 	for( i = m_hash.begin(); i != m_hash.end(); i++ ){
-		printf( "\t%s = %s\n", i->first.c_str(), i->second.c_str() );
+		printf( "%s : %s\n", i->first.c_str(), i->second.c_str() );
 	}
 	printf( "-------------------------\n" );
 }
