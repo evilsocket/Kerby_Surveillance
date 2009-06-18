@@ -68,7 +68,7 @@ int main( int argc, char *argv[] ){
 
 		delta = analyzer->update( &frame );
 		
-		printf( "DELTA : %f\n", delta );
+		if( delta > 0 ) printf( "DELTA : %f\n", delta );
 	}
 
 	v4l->close( &device );

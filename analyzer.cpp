@@ -45,13 +45,13 @@ double Analyzer::update( kb_video_buffer_t *frame ){
 	double     rd, gd, bd,     // red, green and blue delta values
 		 	   qdelta;		   // quadrant delta value
 	
-	for( x = 0; x < frame->width; x += this->m_quadrant_size ){
-		for( y = 0; y < frame->height; y += this->m_quadrant_size ){
+	for( x = 0; x < frame->width; x += m_quadrant_size ){
+		for( y = 0; y < frame->height; y += m_quadrant_size ){
+			// compute quadrants coordinates
 			xt = x;
 			yt = y;
-			xb = x + this->m_quadrant_size;
-			yb = y + this->m_quadrant_size;
-			
+			xb = x + m_quadrant_size;
+			yb = y + m_quadrant_size;
 			// compute delta value between frame and m_masterframe (the previous frame)
 			qdelta = 0;
 			for( xq = xt; xq < xb; xq++ ){
@@ -60,16 +60,16 @@ double Analyzer::update( kb_video_buffer_t *frame ){
 					m_driver->pixel( m_masterframe, xq, yq, &mpixel );	
 					m_driver->pixel( frame,         xq, yq, &fpixel );
 					// compute delta					
-					rd = this->delta( mpixel.red,   fpixel.red );
-        			gd = this->delta( mpixel.green, fpixel.green );
-					bd = this->delta( mpixel.blue,  fpixel.blue );
+					rd = delta( mpixel.red,   fpixel.red );
+        			gd = delta( mpixel.green, fpixel.green );
+					bd = delta( mpixel.blue,  fpixel.blue );
 
 					qdelta += ((rd + gd + bd) / 3.0f);
 				}	
 			}
 			qdelta /= m_quadrants;
 		
-			if( qdelta >= this->m_threshold ){
+			if( qdelta >= m_threshold ){
 				count++;
 			}
 		}
